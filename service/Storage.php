@@ -45,16 +45,17 @@ class Storage {
 			$obj->idNacionalidad = $row['idNacionalidad'];
 			$obj->idTipoDirector = $row['idTipoDirector'];
 			$obj->strNacionalidad = $row['str_nacionalidad'];
-			// $obj->idInstrumento = $row['id']; // este corresponde al instrumento
-			// $obj->codigoTextoInstrumento = $row['codigoTexto']; // corresponde al instrumento
+			$obj->idInstrumento = $row[9]; // este corresponde al instrumento
+			$obj->codigoTextoInstrumento = $row[10]; // corresponde al instrumento
 			$obj->codigoNacionalidad = $row['codigoNacionalidad'];
-			// $obj->idNacionalidad = $row['id']; // corresponde al id de la nacionalidad
-			// $obj->idTipoIntegrante = $row['id']; // corresponde al id del tipo de integrante
+			$obj->idNacionalidad = $row[11]; // corresponde al id de la nacionalidad
+			$obj->idTipoIntegrante = $row[13]; // corresponde al id del tipo de integrante
 			$obj->codigoTextoTipoIntegrante = $row['codigoTexto']; // Corresponde al codigoTexto del tipo de integrante
-			// $obj->idTipoDirector = $row['id']; // corresponde al id del tipo de director
+			$obj->idTipoDirector = $row[14]; // corresponde al id del tipo de director
 			$obj->codigoTipoDirector = $row['codigoTipo'];
 			array_push($data, $obj);
 		}
+
 		echo json_encode($data);
 		$this->close();
 	}
