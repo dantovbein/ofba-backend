@@ -121,7 +121,7 @@ class Storage {
 
 	public function getImagenes() {
 		$this->connect();
-		$query = "SELECT * FROM imagenes ORDER BY orden ASC";
+		$query = "SELECT * FROM imagenes LEFT JOIN textos ON imagenes.codigoTexto=textos.codigo ORDER BY orden ASC";
 		$result = mysql_query($query) or die ("Error en la consulta de las imagenes");
 		$data = array();
 		while($row = mysql_fetch_array($result)) {
@@ -129,6 +129,7 @@ class Storage {
 			$obj->id = $row['id'];
 			$obj->path = $row['path'];
 			$obj->codigoTexto = $row['codigoTexto'];
+			$obj->texto = $this->utf8ize($row['texto']);
 			$obj->orden = $row['orden'];
 			array_push($data, $obj);
 		}
