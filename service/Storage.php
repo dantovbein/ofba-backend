@@ -32,7 +32,7 @@ class Storage {
 
 	public function getIntegrantes() {
 		$this->connect();
-		$query = "SELECT * FROM integrantes ORDER BY nombres ASC";
+		$query = "SELECT * FROM integrantes as i LEFT JOIN instrumentos as ins ON i.idInstrumento=ins.id LEFT JOIN nacionalidades_perfx as nac ON i.idNacionalidad=nac.id LEFT JOIN tipos_integrante as tint ON i.idTipoIntegrante=tint.id LEFT JOIN tipos_director as tdir ON i.idTipoIntegrante=tdir.id ORDER BY i.nombres ASC";		
 		$result = mysql_query($query) or die ("Error en la consulta de los integrantes");
 		$data = array();
 		while($row = mysql_fetch_array($result)) {
@@ -45,6 +45,14 @@ class Storage {
 			$obj->idNacionalidad = $row['idNacionalidad'];
 			$obj->idTipoDirector = $row['idTipoDirector'];
 			$obj->strNacionalidad = $row['str_nacionalidad'];
+			// $obj->idInstrumento = $row['id']; // este corresponde al instrumento
+			// $obj->codigoTextoInstrumento = $row['codigoTexto']; // corresponde al instrumento
+			$obj->codigoNacionalidad = $row['codigoNacionalidad'];
+			// $obj->idNacionalidad = $row['id']; // corresponde al id de la nacionalidad
+			// $obj->idTipoIntegrante = $row['id']; // corresponde al id del tipo de integrante
+			$obj->codigoTextoTipoIntegrante = $row['codigoTexto']; // Corresponde al codigoTexto del tipo de integrante
+			// $obj->idTipoDirector = $row['id']; // corresponde al id del tipo de director
+			$obj->codigoTipoDirector = $row['codigoTipo'];
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
@@ -163,6 +171,64 @@ class Storage {
 			$obj->idIdioma = $row['idIdioma'];
 			$obj->codigo = $row['codigo'];
 			$obj->texto = $this->utf8ize($row['texto']);
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
+	public function getObras() {
+		$this->connect();
+		$query = "SELECT * FROM obras as o LEFT JOIN eventos_perfx as e ON o.idEvento=e.id LEFT JOIN integrantes as i ON o.idCompositor=i.id";
+		$result = mysql_query($query) or die ("Error en la consulta de las obras");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			$obj->idObra = $row['idObra'];
+			$obj->idEvento = $row['idEvento'];
+			$obj->idCompositor = $row['idCompositor'];
+			$obj->strObra = $this->utf8ize($row['str_Obra']);
+			$obj->strAtributos = $row['str_atributos'];
+			$obj->strConpositor = $row['str_Compositor'];
+			$obj->idOrden = $row['idOrden'];
+			$obj->idTemporada = $row['idTemporada'];
+			$obj->idCiclo = $row['idCiclo'];
+			$obj->codigoTitulo = $row['codigoTitulo'];
+			$obj->fecha = $row['fecha'];
+			$obj->horaInicio = $row['horaInicio'];
+			$obj->horaFin = $row['horaFin'];
+			$obj->codigoTexto = $row['codigoTexto'];
+			$obj->link = $row['link'];
+			$obj->idLocacion = $row['idLocacion'];
+			$obj->strTitulo = $row['str_titulo'];
+			$obj->strTemporada = $row['str_temporada'];
+			$obj->strCiclo = $row['str_ciclo'];
+			$obj->strLocacion = $row['str_locacion'];
+			$obj->idPais = $row['idpais'];
+			$obj->strCiudad = $row['str_ciudad'];
+			$obj->girasNacionalidad = $row['giras_nacionalidad'];
+			$obj->idIntegrante = $row['id'];
+			$obj->nombres = $row['nombres'];
+			$obj->apellidos = $row['apellidos'];
+			$obj->idTipoIntegrante = $row['idTipoIntegrante'];
+			$obj->idInstrumento = $row['idInstrumento'];
+			$obj->idNacionalidad = $row['idNacionalidad'];
+			$obj->idTipoDirector = $row['idTipoDirector'];
+			$obj->strNacionalidad = $row['str_nacionalidad'];
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
+	public function getGiras() {
+		$this->connect();
+		$query = "SELECT * FROM giras as g LEFT JOIN temporadas as t ON g.idTemporada=t.id LEFT JOIN nacionalidades_perfx as n ON g.idnacionalidad=n.id";
+		$result = mysql_query($query) or die ("Error en la consulta de las giras");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			// Guardar columnas
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
