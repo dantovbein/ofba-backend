@@ -7,7 +7,7 @@ class Storage {
 	private $sql;
 
 	public function Storage() {
-		$debug = true;
+		$debug = !true;
 		if($debug) {
 			$this->host = "localhost";	
 			$this->username = "root";
@@ -142,6 +142,19 @@ class Storage {
 		$this->close();
 	}
 
+	public function postImagen($data){
+		$this->connect();
+		//$fullpath = '/ofba/images/ofba/imageGallery/thumbs/';
+		$fullpath = '/projects/ofba/images/uploads/';
+		$query = 'INSERT INTO imagenes (path,codigoTexto,orden) VALUES ("' . $fullpath . $data['path'] . '","' . $data['codigoTexto'] . '","' . $data['orden'] . '");';
+		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
+		if(mysql_insert_id() > 0) {
+			$this->postTexto($data);
+		} else {
+			$this->close();	
+		}
+	}
+
 	public function getTextos() {
 		$this->connect();
 		$query = "SELECT * FROM textos";
@@ -173,6 +186,15 @@ class Storage {
 		echo json_encode($data);
 		$this->close();
 	}
+
+	public function postTexto($data){
+		$this->connect();
+		$query = 'INSERT INTO textos (idIdioma,texto,codigo) VALUES (1,"' . $this->utf8ize($data['texto']) . '","' . $data['codigoTexto'] . '");';
+		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
+		echo mysql_insert_id();
+		$this->close();
+	}
+
 
 	public function getObras() {
 		$this->connect();
