@@ -146,13 +146,25 @@ class Storage {
 		$this->connect();
 		//$fullpath = '/ofba/images/ofba/imageGallery/thumbs/';
 		$fullpath = '/projects/ofba/images/uploads/';
-		$query = 'INSERT INTO imagenes (path,codigoTexto,orden) VALUES ("' . $fullpath . $data['path'] . '","' . $data['codigoTexto'] . '","' . $data['orden'] . '");';
+		
+		$query = 'INSERT INTO imagenes (path,orden) VALUES ("' . $fullpath . $data['path'] . '","' . $data['orden'] . '");';
 		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
-		if(mysql_insert_id() > 0) {
-			$this->postTexto($data);
+
+		$idImagen = mysql_insert_id();
+
+		$query = 'UPDATE imagenes SET codigoTexto="' . 'IMG_GALLERY_IMG_' . $idImagen . '" WHERE id="' . $idImagen . '"';
+		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
+
+		if($idImagen > 0) {
+			$this->postTextoImagen($data,$idImagen);
 		} else {
 			$this->close();	
 		}
+	}
+
+	public function editImagen($data){
+		$this->connect();
+		$this->editTexto($data);
 	}
 
 	public function getTextos() {
@@ -168,6 +180,13 @@ class Storage {
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
+		$this->close();
+	}
+
+	public function deleteImagen($data) {
+		$this->connect();
+		$query = 'DELETE FROM imagenes WHERE id=' . $data['id'];
+		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
 		$this->close();
 	}
 
@@ -187,14 +206,21 @@ class Storage {
 		$this->close();
 	}
 
-	public function postTexto($data){
+	public function postTextoImagen($data,$idImagen){
 		$this->connect();
-		$query = 'INSERT INTO textos (idIdioma,texto,codigo) VALUES (1,"' . $this->utf8ize($data['texto']) . '","' . $data['codigoTexto'] . '");';
+		$query = 'INSERT INTO textos (idIdioma,texto,codigo) VALUES (1,"' . $this->utf8ize($data['texto']) . '","' . 'IMG_GALLERY_IMG_' . $idImagen . '");';
 		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
 		echo mysql_insert_id();
 		$this->close();
 	}
 
+	public function editTexto($data){
+		$this->connect();
+		$query = 'UPDATE textos SET texto="' . $data['texto'] . '", codigo="' . $data['codigoTexto'] . '" WHERE codigo="' . $data['codigoTexto'] . '"';
+		$result = mysql_query($query) or die('Error en la consulta -> ' .  $query);
+		echo mysql_insert_id();
+		$this->close();
+	}
 
 	public function getObras() {
 		$this->connect();
