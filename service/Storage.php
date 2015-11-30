@@ -7,7 +7,7 @@ class Storage {
 	private $sql;
 
 	public function Storage() {
-		$debug = !true;
+		$debug = true;
 		if($debug) {
 			$this->host = "localhost";	
 			$this->username = "root";
