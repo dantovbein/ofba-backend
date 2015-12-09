@@ -266,14 +266,80 @@ class Storage {
 		$this->close();
 	}
 
+	public function getNacionalidades() {
+		$this->connect();
+		$query = "SELECT * FROM nacionalidades_perfx";
+		$result = mysql_query($query) or die ("Error en la consulta de las nacionalidades");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			$obj->id = $row['id'];
+			$obj->codigoNacionalidad = $row['codigoNacionalidad'];
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
+	public function getLocaciones() {
+		$this->connect();
+		$query = "SELECT * FROM locaciones";
+		$result = mysql_query($query) or die ("Error en la consulta de las locaciones");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			$obj->id = $row['id'];
+			$obj->codigoTexto = $row['codigoTexto'];
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
+	public function getTemporadas() {
+		$this->connect();
+		//$query = "SELECT * FROM temporadas as tem LEFT JOIN textos as txt ON tem.codigoNombre=txt.codigo";
+		$query = "SELECT * FROM temporadas";
+		$result = mysql_query($query) or die ("Error en la consulta de las temporadas");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			$obj->id = $row['id'];
+			$obj->codigoNombre = $row['codigoNombre'];
+			//$obj->texto = $row['texto'];
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
 	public function getGiras() {
 		$this->connect();
-		$query = "SELECT * FROM giras as g LEFT JOIN temporadas as t ON g.idTemporada=t.id LEFT JOIN nacionalidades_perfx as n ON g.idnacionalidad=n.id";
+		//$query = "SELECT * FROM giras as g LEFT JOIN temporadas as t ON g.idTemporada=t.id LEFT JOIN nacionalidades_perfx as n ON g.idnacionalidad=n.id";
+		$query = "SELECT * FROM giras";
 		$result = mysql_query($query) or die ("Error en la consulta de las giras");
 		$data = array();
 		while($row = mysql_fetch_array($result)) {
 			$obj = new stdClass;
 			// Guardar columnas
+			array_push($data, $obj);
+		}
+		echo json_encode($data);
+		$this->close();
+	}
+
+	public function getCiclos() {
+		$this->connect();
+		//$query = "SELECT * FROM ciclos as c LEFT JOIN textos as txt ON c.codigoCiclo=txt.codigo LEFT JOIN temporadas as tem ON c.idTemporada=tem.id";
+		$query = "SELECT * FROM ciclos";
+		$result = mysql_query($query) or die ("Error en la consulta de los ciclos");
+		$data = array();
+		while($row = mysql_fetch_array($result)) {
+			$obj = new stdClass;
+			$obj->id = $row['id'];
+			$obj->codigoCiclo = $row['codigoCiclo'];
+			$obj->idTemporada = $row['idTemporada'];
+			//$obj->texto = $this->utf8ize($row['texto']);
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
