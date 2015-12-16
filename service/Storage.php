@@ -32,13 +32,15 @@ class Storage {
 
 	public function getIntegrantes() {
 		$this->connect();
-		$query = "SELECT *,i.id as idIntegrante,ins.codigoTexto as codigoTexto_instrumento FROM integrantes as i LEFT JOIN instrumentos as ins ON i.idInstrumento=ins.id LEFT JOIN nacionalidades_perfx as nac ON i.idNacionalidad=nac.id LEFT JOIN tipos_integrante as tint ON i.idTipoIntegrante=tint.id LEFT JOIN tipos_director as tdir ON i.idTipoIntegrante=tdir.id ORDER BY i.nombres ASC";		
+		//$query = "SELECT *,i.id as idIntegrante,ins.codigoTexto as codigoTexto_instrumento FROM integrantes as i LEFT JOIN instrumentos as ins ON i.idInstrumento=ins.id LEFT JOIN nacionalidades_perfx as nac ON i.idNacionalidad=nac.id LEFT JOIN tipos_integrante as tint ON i.idTipoIntegrante=tint.id LEFT JOIN tipos_director as tdir ON i.idTipoIntegrante=tdir.id ORDER BY i.nombres ASC";		
+		$query = "SELECT * FROM integrantes ORDER BY nombres ASC ";
 		$result = mysql_query($query) or die ("Error en la consulta de los integrantes");
 		
 		$data = array();
 		while($row = mysql_fetch_array($result)) {
 			$obj = new stdClass;
-			$obj->id = $row['idIntegrante'];
+			//$obj->id = $row['idIntegrante'];
+			$obj->id = $row['id'];
 			$obj->nombres = $this->utf8ize($row['nombres']);
 			$obj->apellidos = $this->utf8ize($row['apellidos']);
 			$obj->idTipoIntegrante = $row['idTipoIntegrante'];
@@ -46,10 +48,10 @@ class Storage {
 			$obj->idNacionalidad = $row['idNacionalidad'];
 			$obj->idTipoDirector = $row['idTipoDirector'];
 			$obj->strNacionalidad = $row['str_nacionalidad'];
-			$obj->codigoTextoInstrumento = $this->utf8ize($row['codigoTexto_instrumento']);
-			$obj->codigoNacionalidad = $row['codigoNacionalidad'];
-			$obj->codigoTextoTipoIntegrante = $this->utf8ize($row['codigoTexto']);
-			$obj->codigoTipoDirector = $row['codigoTipo'];
+			//$obj->codigoTextoInstrumento = $this->utf8ize($row['codigoTexto_instrumento']);
+			//$obj->codigoNacionalidad = $row['codigoNacionalidad'];
+			//$obj->codigoTextoTipoIntegrante = $this->utf8ize($row['codigoTexto']);
+			//$obj->codigoTipoDirector = $row['codigoTipo'];
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
