@@ -238,7 +238,7 @@ class Storage {
 			$obj->strAtributos = $this->utf8ize($row['str_atributos']);
 			$obj->strCompositor = $this->utf8ize($row['str_Compositor']);
 			$obj->idOrden = $this->utf8ize($row['idOrden']);
-			$obj->idTemporada = $row['idTemporada'];
+			/*$obj->idTemporada = $row['idTemporada'];
 			$obj->idCiclo = $row['idCiclo'];
 			$obj->codigoTitulo = $row['codigoTitulo'];
 			$obj->fecha = $row['fecha'];
@@ -261,7 +261,7 @@ class Storage {
 			$obj->idInstrumento = $row['idInstrumento'];
 			$obj->idNacionalidad = $row['idNacionalidad'];
 			$obj->idTipoDirector = $row['idTipoDirector'];
-			$obj->strNacionalidad = $row['str_nacionalidad'];
+			$obj->strNacionalidad = $row['str_nacionalidad'];*/
 			array_push($data, $obj);
 		}
 		echo json_encode($data);
