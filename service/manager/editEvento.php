@@ -3,6 +3,7 @@
 	
 	require_once "../Storage.php";	
 	
+	$uidEvento = (isset($_GET['uidEvento'])) ? $_GET['uidEvento'] : "";
 	$titulo = (isset($_GET['titulo'])) ? $_GET['titulo'] : "";
 	$imagen = (isset($_GET['imagen'])) ? $_GET['imagen'] : "";
 	$ciclo = (isset($_GET['ciclo'])) ? $_GET['ciclo'] : "";
@@ -21,6 +22,7 @@
 	$desc = (isset($_GET['desc'])) ? $_GET['desc'] : "";
 
 	$data = array(
+    	"uidEvento" => $uidEvento,
     	"titulo" => $titulo,
     	"imagen" => $imagen,
     	"ciclo" => $ciclo,
@@ -39,5 +41,5 @@
     );
 
 	$storage = new Storage();
-	echo $storage->postEvento($data);
+	echo $storage->editEvento($data);
 ?>

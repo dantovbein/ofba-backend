@@ -356,6 +356,7 @@ class Storage {
 			$obj = new stdClass;
 			$obj->uidEvento = $row['uidEvento'];
 			$obj->titulo = $row['str_titulo'];
+			$obj->link = $row['link'];
 			$obj->fechas = array();
 			array_push($eventos, $obj);
 		}
@@ -383,7 +384,7 @@ class Storage {
 		$this->connect();
 		// Calendar
 		$evento = array();
-		
+		$evento['uidEvento'] = $data['uidEvento'];
 		$query = "SELECT * FROM datos_evento WHERE uidEvento='".$data['uidEvento']."'";
 		$result = mysql_fetch_assoc(mysql_query($query)) or die (json_encode([false,mysql_error()]));
 		$evento['titulo'] = $result['str_titulo'];
@@ -394,6 +395,7 @@ class Storage {
 		$evento['ciudad'] = $result['idciudad'];
 		$evento['ciclo'] = $result['idCiclo'];
 		$evento['locacion'] = $result['idLocacion'];
+		$evento['director'] = $result['idDirector'];
 
 		$query = "SELECT * FROM imagenes_evento WHERE uidEvento='".$data['uidEvento']."'";
 		$result = mysql_query($query) or die (json_encode([false,mysql_error()]));
@@ -512,7 +514,7 @@ class Storage {
 		}
 
 		if($addEvent) {
-			$queryDatosEvento = "INSERT INTO datos_evento (uidEvento,link,idTemporada,giras_nacionalidad,idpais,idciudad,idCiclo,idLocacion,str_titulo) VALUES ('".$uidEvento."','".$link."','".$data['temporada']."','".$data['nacionalidad']."','".$data['pais']."','".$data['ciudad']."','".$data['ciclo']."','".$data['locacion']."','".$data['titulo']."');";
+			$queryDatosEvento = "INSERT INTO datos_evento (uidEvento,link,idTemporada,giras_nacionalidad,idpais,idciudad,idCiclo,idLocacion,str_titulo,idDirector) VALUES ('".$uidEvento."','".$link."','".$data['temporada']."','".$data['nacionalidad']."','".$data['pais']."','".$data['ciudad']."','".$data['ciclo']."','".$data['locacion']."','".$data['titulo']."','".$data['director']."');";
 			mysql_query($queryDatosEvento) or die (json_encode([false,mysql_error().', '.$queryDatosEvento]));
 			// Imagen
 			$queryEventImagen = "INSERT INTO imagenes_evento (uidEvento,imagen) VALUES ('".$uidEvento."','". $data['imagen']."');";
@@ -520,30 +522,137 @@ class Storage {
 			
 			// Directores
 			for($d=0;$d<count($data['directores']);$d++) {
-				$queryEventDirectores = "INSERT INTO directores_evento (idEvento,uidEvento,idDirector) VALUES ('0','".$uidEvento."','". $data['directores'][$d]."');";
+				$queryEventDirectores = "INSERT INTO directores_evento (idEvento,uidEvento,idDirector) VALUES ('0','".$uidEvento."','". $data['directores'][$d]->idDirector."');";
 				mysql_query($queryEventDirectores) or die (json_encode([false,mysql_error().', '.$queryEventDirectores]));
 			}
 
 			// Solistas
 			for($s=0;$s<count($data['solistas']);$s++) {
-				$queryEventSolistas = "INSERT INTO solistas_evento (idEvento,uidEvento,idSolista) VALUES ('0','".$uidEvento."','". $data['solistas'][$s]."');";
+				$queryEventSolistas = "INSERT INTO solistas_evento (idEvento,uidEvento,idSolista) VALUES ('0','".$uidEvento."','". $data['solistas'][$s]->idSolista."');";
 				mysql_query($queryEventSolistas) or die (json_encode([false,mysql_error().', '.$queryEventSolistas]));
 			}
 
 			// Compositores
 			for($c=0;$c<count($data['compositores']);$c++) {
-				$queryEventCompositores = "INSERT INTO compositores_evento (idEvento,uidEvento,idCompositor) VALUES ('0','".$uidEvento."','". $data['compositores'][$c]->id."');";
+				$queryEventCompositores = "INSERT INTO compositores_evento (idEvento,uidEvento,idCompositor) VALUES ('0','".$uidEvento."','". $data['compositores'][$c]->idCompositor."');";
 				$result = mysql_query($queryEventCompositores) or die(json_encode([false,mysql_error().', '.$queryEventCompositores]));
 				// Insert obras from each one
 				for($o=0;$o<count($data['compositores'][$c]->obras);$o++) {
-					$queryObraCompositor = "INSERT INTO obras_evento (idObra,uidEvento,idCompositor) VALUES ('".$data['compositores'][$c]->obras[$o]."','".$uidEvento."','".$data['compositores'][$c]->id."')";
+					$queryObraCompositor = "INSERT INTO obras_evento (idObra,uidEvento,idCompositor) VALUES ('".$data['compositores'][$c]->obras[$o]."','".$uidEvento."','".$data['compositores'][$c]->idCompositor."')";
 					mysql_query($queryObraCompositor) or die (json_encode([false,mysql_error().', '.$queryObraCompositor]));
 				}
 			}
 
 			// Textos
 			for($t=0;$t<count($data['textos']);$t++) {
-				$queryTextosEvento = "INSERT INTO textos_evento (uidEvento,texto,orden) VALUES ('".$uidEvento."','". $data['textos'][$t]."','". ($t+1)."');";
+				$queryTextosEvento = "INSERT INTO textos_evento (uidEvento,texto,orden) VALUES ('".$uidEvento."','". $data['textos'][$t]->texto."','". ($t+1)."');";
+				mysql_query($queryTextosEvento) or die (json_encode([false,mysql_error().', '.$queryTextosEvento]));
+			}
+		}
+			
+		$this->close();
+	}
+
+	public function editEvento($data) {
+		$this->connect();
+		
+		$addEvent = false;
+		$uidEvento = $data['uidEvento'];
+
+		for($i=0;$i<count($data['fechas']);$i++){
+			$addEvent = true;
+			$uid = md5(uniqid(rand(), true));
+			
+			// Event Details
+			$queryRemoveEventDetails = "DELETE FROM ofba_jevents_vevdetail WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventDetails) or die (json_encode([false,mysql_error().', '.$queryRemoveEventDetails]));
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$data['fechas'][$i]."','". $data['desc']."','".""."');";
+			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
+			$eventDetailId = mysql_insert_id();
+			
+			$epochDate = $data['fechas'][$i]; 
+			$dt = new DateTime("@$epochDate");
+			$dt->format('Y-m-d');
+			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$dt->format('Y-m-d').'";s:10:"publish_up";s:10:"'.$dt->format('Y-m-d').'";s:13:"publish_down2";s:10:"'.$dt->format('Y-m-d').'";s:11:"publish_up2";s:10:"'.$dt->format('Y-m-d').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$data['fechas'][$i].';s:5:"DTEND";i:'.$data['fechas'][$i].';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
+			
+			// Event
+			$queryRemoveEventData = "DELETE FROM ofba_jevents_vevent WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventData) or die (json_encode([false,mysql_error().', '.$queryRemoveEventData]));
+			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
+			mysql_query($queryEventData) or die (json_encode([false,mysql_error().', '.$queryEventData]));
+			$eventId = mysql_insert_id();
+			
+			
+			// Repetition of the event and get the url.
+			$queryRemoveEventRepetition = "DELETE FROM ofba_jevents_repetition WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventRepetition) or die (json_encode([false,mysql_error().', '.$queryRemoveEventRepetition]));
+			$uidRepetition = md5(uniqid(rand(), true));
+			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$dt->format('Y-m-d H:m:s')."','".$dt->format('Y-m-d H:m:s')."');";
+			mysql_query($queryEventRepetition) or die (json_encode([false,mysql_error().', '.$queryEventRepetition]));
+			$eventRepetitionId = mysql_insert_id();
+			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$dt->format('Y')."/".$dt->format('m')."/".$dt->format('d')."/".$eventRepetitionId;
+
+			
+			// Get last event id
+			$queryLastEvento = "SELECT id FROM eventos_perfx ORDER BY id DESC LIMIT 1;";
+			$result = mysql_fetch_assoc(mysql_query($queryLastEvento));
+			$lastEventPerfxId = $result['id'];
+			$newEeventoPerfxId = $lastEventPerfxId+1;
+			$queryRemoveEventoPerfx = "DELETE FROM eventos_perfx WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryRemoveEventoPerfx]));
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (id,eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$newEeventoPerfxId."','".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$dt->format('Y-m-d')."','".$dt->format('H:m:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
+			mysql_query($queryEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryEventoPerfx]));
+		}
+
+		if($addEvent) {
+			// Datos evento
+			$queryUpdateDatosEvento = 'UPDATE datos_evento SET link="' . $link . '", idTemporada="' . $data['temporada'] . '", giras_nacionalidad="' . $data['nacionalidad'] . '", idpais="' . $data['pais'] . '", idciudad="' . $data['ciudad'] . '", idCiclo="' . $data['ciclo'] . '", idLocacion="' . $data['locacion'] . '", str_titulo="' . $data['titulo'] . '", idDirector="' . $data['director'] . '" WHERE uidEvento="' . $uidEvento .'"';
+			mysql_query($queryUpdateDatosEvento) or die (json_encode([false,mysql_error().', '.$queryUpdateDatosEvento]));
+			
+			// Imagen
+			$queryRemoveEventImagen = "DELETE FROM imagenes_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventImagen) or die (json_encode([false,mysql_error().', '.$queryRemoveEventImagen]));
+			$queryEventImagen = "INSERT INTO imagenes_evento (uidEvento,imagen) VALUES ('".$uidEvento."','". $data['imagen']."');";
+			mysql_query($queryEventImagen) or die (json_encode([false,mysql_error().', '.$queryEventImagen]));
+			
+			
+			// Directores
+			$queryRemoveEventDirectores = "DELETE FROM directores_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventDirectores) or die (json_encode([false,mysql_error().', '.$queryRemoveEventDirectores]));
+			for($d=0;$d<count($data['directores']);$d++) {
+				$queryEventDirectores = "INSERT INTO directores_evento (idEvento,uidEvento,idDirector) VALUES ('0','".$uidEvento."','". $data['directores'][$d]->idDirector."');";
+				mysql_query($queryEventDirectores) or die (json_encode([false,mysql_error().', '.$queryEventDirectores]));
+			}
+
+			
+			// Solistas
+			$queryRemoveEventSolistas = "DELETE FROM solistas_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventSolistas) or die (json_encode([false,mysql_error().', '.$queryRemoveEventSolistas]));
+			for($s=0;$s<count($data['solistas']);$s++) {
+				$queryEventSolistas = "INSERT INTO solistas_evento (idEvento,uidEvento,idSolista) VALUES ('0','".$uidEvento."','". $data['solistas'][$s]->idSolista."');";
+				mysql_query($queryEventSolistas) or die (json_encode([false,mysql_error().', '.$queryEventSolistas]));
+			}
+
+			// Compositores
+			$queryRemoveEventCompositores = "DELETE FROM compositores_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventCompositores) or die (json_encode([false,mysql_error().', '.$queryRemoveEventCompositores]));
+			$queryRemoveObrasCompositor = "DELETE FROM obras_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveObrasCompositor) or die (json_encode([false,mysql_error().', '.$queryRemoveObrasCompositor]));
+			for($c=0;$c<count($data['compositores']);$c++) {
+				$queryEventCompositores = "INSERT INTO compositores_evento (idEvento,uidEvento,idCompositor) VALUES ('0','".$uidEvento."','". $data['compositores'][$c]->idCompositor."');";
+				$result = mysql_query($queryEventCompositores) or die(json_encode([false,mysql_error().', '.$queryEventCompositores]));
+				// Insert obras from each one
+				for($o=0;$o<count($data['compositores'][$c]->obras);$o++) {
+					$queryObraCompositor = "INSERT INTO obras_evento (idObra,uidEvento,idCompositor) VALUES ('".$data['compositores'][$c]->obras[$o]."','".$uidEvento."','".$data['compositores'][$c]->idCompositor."')";
+					mysql_query($queryObraCompositor) or die (json_encode([false,mysql_error().', '.$queryObraCompositor]));
+				}
+			}
+
+			// Textos
+			$queryRemoveTextosEvento = "DELETE FROM textos_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveTextosEvento) or die (json_encode([false,mysql_error().', '.$queryRemoveTextosEvento]));
+			for($t=0;$t<count($data['textos']);$t++) {
+				$queryTextosEvento = "INSERT INTO textos_evento (uidEvento,texto,orden) VALUES ('".$uidEvento."','". $data['textos'][$t]->texto."','". ($t+1)."');";
 				mysql_query($queryTextosEvento) or die (json_encode([false,mysql_error().', '.$queryTextosEvento]));
 			}
 		}
