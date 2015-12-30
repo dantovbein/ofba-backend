@@ -487,9 +487,17 @@ class Storage {
 			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
 			$eventDetailId = mysql_insert_id();
 			
-			$epochDate = $data['fechas'][$i]; 
+			// 1413502200 real db
+			// 1394062200 real db
+			// 1394074799 real db
+			// 1449061080000 12/02/2015 9:58AM
+			$epochDate = 1394074799;
+			//$epochDate = (int)$data['fechas'][$i]/1000;
+			//$num = (int)$epochDate;
+			//echo $num/1000;
 			$dt = new DateTime("@$epochDate");
 			$dt->format('Y-m-d');
+			echo $dt->format('Y-m-d');
 			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$dt->format('Y-m-d').'";s:10:"publish_up";s:10:"'.$dt->format('Y-m-d').'";s:13:"publish_down2";s:10:"'.$dt->format('Y-m-d').'";s:11:"publish_up2";s:10:"'.$dt->format('Y-m-d').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$data['fechas'][$i].';s:5:"DTEND";i:'.$data['fechas'][$i].';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
