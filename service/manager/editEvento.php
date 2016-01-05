@@ -45,7 +45,7 @@
     	"strTemporada" => $strTemporada,
     	"strCiclo" => $strCiclo,
     	"strLocacion" => $strLocacion,
-    	"desc" => $strCiudad
+    	"strCiudad" => $strCiudad
     );
 
 	$storage = new Storage();
