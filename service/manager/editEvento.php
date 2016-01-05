@@ -20,6 +20,10 @@
 	$compositores = $extras->compositores;
 	$solistas = $extras->solistas;
 	$desc = (isset($_GET['desc'])) ? $_GET['desc'] : "";
+	$strTemporada = (isset($_GET['strTemporada'])) ? $_GET['strTemporada'] : "";
+	$strCiclo = (isset($_GET['strCiclo'])) ? $_GET['strCiclo'] : "";
+	$strLocacion = (isset($_GET['strLocacion'])) ? $_GET['strLocacion'] : "";
+	$strCiudad = (isset($_GET['strCiudad'])) ? $_GET['strCiudad'] : "";
 
 	$data = array(
     	"uidEvento" => $uidEvento,
@@ -37,7 +41,11 @@
     	"directores" => $directores,
     	"compositores" => $compositores,
     	"solistas" => $solistas,
-    	"desc" => $desc
+    	"desc" => $desc,
+    	"strTemporada" => $strTemporada,
+    	"strCiclo" => $strCiclo,
+    	"strLocacion" => $strLocacion,
+    	"desc" => $strCiudad
     );
 
 	$storage = new Storage();

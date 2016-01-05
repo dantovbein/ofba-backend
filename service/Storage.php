@@ -484,7 +484,7 @@ class Storage {
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
 			
-			$seconds = round((int)$data['fechas'][$i]->fecha/1000);
+			//$seconds = round((int)$data['fechas'][$i]->fecha/1000);
 			//$fecha = new DateTime();
 			//$fecha->setTimestamp($seconds);
 
@@ -493,11 +493,11 @@ class Storage {
 			$fecha = new DateTime("@$epoch");
 
 			// Event Details
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$seconds."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".""."');";
 			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
 			$eventDetailId = mysql_insert_id();
 			
-			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$seconds.';s:5:"DTEND";i:'.$seconds.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
+			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$epoch.';s:5:"DTEND";i:'.$epoch.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
 			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
@@ -511,7 +511,7 @@ class Storage {
 			$eventRepetitionId = mysql_insert_id();
 			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
 
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
 			mysql_query($queryEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryEventoPerfx]));
 			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
@@ -588,17 +588,20 @@ class Storage {
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
 
-			$seconds = round((int)$data['fechas'][$i]->fecha/1000);
-			$fecha = new DateTime();
-			$fecha->setTimestamp($seconds);
+			//$seconds = round((int)$data['fechas'][$i]->fecha/1000);
+			//$fecha = new DateTime();
+			//$fecha->setTimestamp($seconds);
+
+			$epoch = (int)$data['fechas'][$i]->fecha / 1000; 
+			$fecha = new DateTime("@$epoch");
 			
 			// Event Details
 			
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$seconds."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".""."');";
 			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
 			$eventDetailId = mysql_insert_id();
 			
-			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$seconds.';s:5:"DTEND";i:'.$seconds.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
+			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$epoch.';s:5:"DTEND";i:'.$epoch.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
 			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
@@ -613,7 +616,7 @@ class Storage {
 			$eventRepetitionId = mysql_insert_id();
 			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
 
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('d/m/Y')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
 			mysql_query($queryEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryEventoPerfx]));
 			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
