@@ -356,7 +356,7 @@ class Storage {
 			$obj = new stdClass;
 			$obj->uidEvento = $row['uidEvento'];
 			$obj->titulo = $row['str_titulo'];
-			$obj->link = $row['link'];
+			//$obj->link = $row['link'];
 			$obj->fechas = array();
 			array_push($eventos, $obj);
 		}
@@ -389,7 +389,7 @@ class Storage {
 		$query = "SELECT * FROM datos_evento WHERE uidEvento='".$data['uidEvento']."'";
 		$result = mysql_fetch_assoc(mysql_query($query)) or die (json_encode([false,mysql_error()]));
 		$evento['titulo'] = $result['str_titulo'];
-		$evento['link'] = $result['link'];
+		//$evento['link'] = $result['link'];
 		$evento['temporada'] = $result['idTemporada'];
 		$evento['nacionalidad'] = $result['giras_nacionalidad'];
 		$evento['pais'] = $result['idpais'];
@@ -484,25 +484,20 @@ class Storage {
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
 			
+			$seconds = round((int)$data['fechas'][$i]->fecha/1000);
+			//$fecha = new DateTime();
+			//$fecha->setTimestamp($seconds);
+
+			//date_default_timezone_set("ART"); 
+			$epoch = (int)$data['fechas'][$i]->fecha / 1000; 
+			$fecha = new DateTime("@$epoch");
+
 			// Event Details
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$seconds."','". $data['desc']."','".""."');";
 			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
 			$eventDetailId = mysql_insert_id();
 			
-			// 1413502200 real db
-			// 1394062200 real db
-			// 1394074799 real db
-			// 1449061080000 12/02/2015 9:58AM
-			//$epochDate = 1451515622;
-			//$epochDate = 1418772600;
-			//$epochDate = round(1451516125039 / 1000);
-
-			//$epochDate = (int)$data['fechas'][$i]/1000;
-			$epochDate = round((int)$data['fechas'][$i]->fecha/1000);
-			$dt = new DateTime("@$epochDate");
-			$dt->format('Y-m-d');
-			
-			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$dt->format('Y-m-d').'";s:10:"publish_up";s:10:"'.$dt->format('Y-m-d').'";s:13:"publish_down2";s:10:"'.$dt->format('Y-m-d').'";s:11:"publish_up2";s:10:"'.$dt->format('Y-m-d').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$data['fechas'][$i]->fecha.';s:5:"DTEND";i:'.$data['fechas'][$i]->fecha.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
+			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$seconds.';s:5:"DTEND";i:'.$seconds.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
 			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
@@ -511,17 +506,12 @@ class Storage {
 			
 			// Repetition of the event and get the url.
 			$uidRepetition = md5(uniqid(rand(), true));
-			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$dt->format('Y-m-d H:m:s')."','".$dt->format('Y-m-d H:m:s')."');";
+			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('d/m/Y H:i:s')."','".$fecha->format('d/m/Y H:i:s')."');";
 			mysql_query($queryEventRepetition) or die (json_encode([false,mysql_error().', '.$queryEventRepetition]));
 			$eventRepetitionId = mysql_insert_id();
-			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$dt->format('Y')."/".$dt->format('m')."/".$dt->format('d')."/".$eventRepetitionId;
+			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
 
-			// Get last event id
-			$queryLastEvento = "SELECT id FROM eventos_perfx ORDER BY id DESC LIMIT 1;";
-			$result = mysql_fetch_assoc(mysql_query($queryLastEvento));
-			$lastEventPerfxId = $result['id'];
-			$newEeventoPerfxId = $lastEventPerfxId+1;
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (id,eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$newEeventoPerfxId."','".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$dt->format('Y-m-d')."','".$dt->format('H:m:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
 			mysql_query($queryEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryEventoPerfx]));
 			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
@@ -530,7 +520,7 @@ class Storage {
 		}
 
 		if($addEvent) {
-			$queryDatosEvento = "INSERT INTO datos_evento (uidEvento,link,idTemporada,giras_nacionalidad,idpais,idciudad,idCiclo,idLocacion,str_titulo,idDirector) VALUES ('".$uidEvento."','".$link."','".$data['temporada']."','".$data['nacionalidad']."','".$data['pais']."','".$data['ciudad']."','".$data['ciclo']."','".$data['locacion']."','".$data['titulo']."','".$data['director']."');";
+			$queryDatosEvento = "INSERT INTO datos_evento (uidEvento,idTemporada,giras_nacionalidad,idpais,idciudad,idCiclo,idLocacion,str_titulo,idDirector) VALUES ('".$uidEvento."','".$data['temporada']."','".$data['nacionalidad']."','".$data['pais']."','".$data['ciudad']."','".$data['ciclo']."','".$data['locacion']."','".$data['titulo']."','".$data['director']."');";
 			mysql_query($queryDatosEvento) or die (json_encode([false,mysql_error().', '.$queryDatosEvento]));
 			// Imagen
 			$queryEventImagen = "INSERT INTO imagenes_evento (uidEvento,imagen) VALUES ('".$uidEvento."','". $data['imagen']."');";
@@ -586,63 +576,57 @@ class Storage {
 
 		$queryRemoveEventRepetition = "DELETE FROM ofba_jevents_repetition WHERE uidEvento='".$uidEvento."'";
 		mysql_query($queryRemoveEventRepetition) or die (json_encode([false,mysql_error().', '.$queryRemoveEventRepetition]));
-		$uidRepetition = md5(uniqid(rand(), true));
+		
 
 		$queryRemoveEventoPerfx = "DELETE FROM eventos_perfx WHERE uidEvento='".$uidEvento."'";
 		mysql_query($queryRemoveEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryRemoveEventoPerfx]));
 
+		$queryRemoveEventImagen = "DELETE FROM imagenes_evento WHERE uidEvento='".$uidEvento."'";
+			mysql_query($queryRemoveEventImagen) or die (json_encode([false,mysql_error().', '.$queryRemoveEventImagen]));
+
 		for($i=0;$i<count($data['fechas']);$i++){
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
+
+			$seconds = round((int)$data['fechas'][$i]->fecha/1000);
+			$fecha = new DateTime();
+			$fecha->setTimestamp($seconds);
 			
 			// Event Details
 			
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$seconds."','". $data['desc']."','".""."');";
 			mysql_query($queryEventDetails) or die (json_encode([false,mysql_error().', '.$queryEventDetails]));
 			$eventDetailId = mysql_insert_id();
 			
-			$epochDate = $data['fechas'][$i]->fecha; 
-			$dt = new DateTime("@$epochDate");
-			$dt->format('Y-m-d');
-			
-			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$dt->format('Y-m-d').'";s:10:"publish_up";s:10:"'.$dt->format('Y-m-d').'";s:13:"publish_down2";s:10:"'.$dt->format('Y-m-d').'";s:11:"publish_up2";s:10:"'.$dt->format('Y-m-d').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$data['fechas'][$i]->fecha.';s:5:"DTEND";i:'.$data['fechas'][$i]->fecha.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
+			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$seconds.';s:5:"DTEND";i:'.$seconds.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
-			
 			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
 			mysql_query($queryEventData) or die (json_encode([false,mysql_error().', '.$queryEventData]));
 			$eventId = mysql_insert_id();
 			
 			
 			// Repetition of the event and get the url.
-			
-			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$dt->format('Y-m-d H:m:s')."','".$dt->format('Y-m-d H:m:s')."');";
+			$uidRepetition = md5(uniqid(rand(), true));
+			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('d/m/Y H:i:s')."','".$fecha->format('d/m/Y H:i:s')."');";
 			mysql_query($queryEventRepetition) or die (json_encode([false,mysql_error().', '.$queryEventRepetition]));
 			$eventRepetitionId = mysql_insert_id();
-			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$dt->format('Y')."/".$dt->format('m')."/".$dt->format('d')."/".$eventRepetitionId;
+			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
 
-			
-			// Get last event id
-			$queryLastEvento = "SELECT id FROM eventos_perfx ORDER BY id DESC LIMIT 1;";
-			$result = mysql_fetch_assoc(mysql_query($queryLastEvento));
-			$lastEventPerfxId = $result['id'];
-			$newEeventoPerfxId = $lastEventPerfxId+1;
-			
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (id,eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$newEeventoPerfxId."','".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$dt->format('Y-m-d')."','".$dt->format('H:m:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('d/m/Y')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."');";
 			mysql_query($queryEventoPerfx) or die (json_encode([false,mysql_error().', '.$queryEventoPerfx]));
-
+			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
 			mysql_query($queryEventoFecha) or die (json_encode([false,mysql_error().', '.$queryEventoFecha]));
 		}
 
 		if($addEvent) {
 			// Datos evento
-			$queryUpdateDatosEvento = 'UPDATE datos_evento SET link="' . $link . '", idTemporada="' . $data['temporada'] . '", giras_nacionalidad="' . $data['nacionalidad'] . '", idpais="' . $data['pais'] . '", idciudad="' . $data['ciudad'] . '", idCiclo="' . $data['ciclo'] . '", idLocacion="' . $data['locacion'] . '", str_titulo="' . $data['titulo'] . '", idDirector="' . $data['director'] . '" WHERE uidEvento="' . $uidEvento .'"';
+			$queryUpdateDatosEvento = 'UPDATE datos_evento SET idTemporada="' . $data['temporada'] . '", giras_nacionalidad="' . $data['nacionalidad'] . '", idpais="' . $data['pais'] . '", idciudad="' . $data['ciudad'] . '", idCiclo="' . $data['ciclo'] . '", idLocacion="' . $data['locacion'] . '", str_titulo="' . $data['titulo'] . '", idDirector="' . $data['director'] . '" WHERE uidEvento="' . $uidEvento .'"';
+			
 			mysql_query($queryUpdateDatosEvento) or die (json_encode([false,mysql_error().', '.$queryUpdateDatosEvento]));
 			
 			// Imagen
-			$queryRemoveEventImagen = "DELETE FROM imagenes_evento WHERE uidEvento='".$uidEvento."'";
-			mysql_query($queryRemoveEventImagen) or die (json_encode([false,mysql_error().', '.$queryRemoveEventImagen]));
 			$queryEventImagen = "INSERT INTO imagenes_evento (uidEvento,imagen) VALUES ('".$uidEvento."','". $data['imagen']."');";
 			mysql_query($queryEventImagen) or die (json_encode([false,mysql_error().', '.$queryEventImagen]));
 			
@@ -704,6 +688,7 @@ class Storage {
 		mysql_query('DELETE FROM compositores_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die (json_encode([false,mysql_error()]));
 		mysql_query('DELETE FROM obras_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die (json_encode([false,mysql_error()]));
 		mysql_query('DELETE FROM solistas_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die (json_encode([false,mysql_error()]));
+		mysql_query('DELETE FROM fechas_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die (json_encode([false,mysql_error()]));
 		$this->close();
 	}
 
