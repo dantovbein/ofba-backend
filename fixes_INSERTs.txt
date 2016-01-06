@@ -1,0 +1,18 @@
+ofba_jevents_vevent
+					icsid (Calendar) (ex: 4)
+					catid (Category) (ex: 125)
+					detail_id - No debe AUTOINCREMENTARSE y debe matchear con el ev_id (ex: ev_id 52 y detail_id 52). En este momento se incrementa en 1.
+					access SIEMPRE igual a 1
+
+ofba_jevents_vevdetail
+					evdet_id (event detail ID) Producto del incremento en el INSERT de OFBA_JEVENTS_VEVENT se incrementa en 1 al detail_id y en consecuencia se termina grabando en esta tabla el mismo valor. Debería de matchear el campo ev_id de la tabla OFBA_JEVENTS_VEVENT con evdet_id de esta tabla (OFBA_JEVENTS_VEVDETAIL)
+					SUMMARY	deberia de repetir el mismo valor que se tiene en la UI para Titulo
+ofba_jevents_repetition
+					eventdetail_id mismo caso necesitamos que matchee entre ev_id y evdet_id de sus correspondientes tablas. Hoy por hoy, se incrementa en 1 y por ende se desfasan.
+					startrepeat (ex: ) debe contener dia y hora en el cual empieza el evento
+					endrepeat 	(ex: ) debe llevar la misma fecha y hora siempre poner 23:59:59 para dar indicio del cierre del dia.
+
+
+eventos_perfx
+					link			deberia de ser Así : index.php/homepage/listados-completo/icalrepeat.detail/2016/01/07/99
+										/AÑO/MES/DIA/RP_ID
