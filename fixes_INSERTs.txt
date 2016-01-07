@@ -16,3 +16,21 @@ ofba_jevents_repetition
 eventos_perfx
 					link			deberia de ser Así : index.php/homepage/listados-completo/icalrepeat.detail/2016/01/07/99
 										/AÑO/MES/DIA/RP_ID
+
+
+
+Ballet 80
+Abono 123
+Extraordinario 124
+Contemporanea 125
+Completo 126
+Interno 127
+
+Categorias
+
+Abono - 2
+Ballet - 1
+Contemporanea - 4
+Extraordinario - 3
+
+Calendarios

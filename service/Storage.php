@@ -8,16 +8,12 @@ class Storage {
 
 	public function Storage() {
 		
-		$debug = !true;
+		$debug = true;
 		if($debug) {
-/*			$this->host = "localhost";	
+			$this->host = "localhost";	
 			$this->username = "root";
 			$this->password = "";
-			$this->dataBase = "ofba";*/
-			$this->host = "localhost";	
-			$this->username = "ofba6452_db";
-			$this->password = "po76ZEfo28sa";
-			$this->dataBase = "ofba6452_db";
+			$this->dataBase = "ofba";
 		} else {
 			$this->host = "localhost";	
 			$this->username = "ofba6452_db";
