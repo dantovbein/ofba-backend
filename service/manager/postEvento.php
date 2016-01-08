@@ -23,6 +23,7 @@
 	$strCiclo = (isset($_GET['strCiclo'])) ? $_GET['strCiclo'] : "";
 	$strLocacion = (isset($_GET['strLocacion'])) ? $_GET['strLocacion'] : "";
 	$strCiudad = (isset($_GET['strCiudad'])) ? $_GET['strCiudad'] : "";
+	$textoFunciones = (isset($_GET['textoFunciones'])) ? $_GET['textoFunciones'] : "";
 
 	$data = array(
     	"titulo" => $titulo,
@@ -43,7 +44,8 @@
     	"strTemporada" => $strTemporada,
     	"strCiclo" => $strCiclo,
     	"strLocacion" => $strLocacion,
-    	"strCiudad" => $strCiudad
+    	"strCiudad" => $strCiudad,
+    	"textoFunciones" => $textoFunciones
     );
 
 	$storage = new Storage();
