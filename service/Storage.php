@@ -393,7 +393,7 @@ class Storage {
 		$evento['temporada'] = $result['idTemporada'];
 		$evento['nacionalidad'] = $result['giras_nacionalidad'];
 		$evento['pais'] = $result['idpais'];
-		$evento['ciudad'] = $result['idciudad'];
+		$evento['ciudad'] = ($result['idciudad']==0) ? "" : $result['idciudad'];
 		$evento['ciclo'] = $result['idCiclo'];
 		$evento['locacion'] = $result['idLocacion'];
 		$evento['director'] = $result['idDirector'];
@@ -425,10 +425,17 @@ class Storage {
 		$result = mysql_query($query) or die ("Error en la consulta " . $query);
 		$evento['extras']['textos'] = array();
 		while($row = mysql_fetch_array($result)) {
-			$obj = new stdClass;
-			$obj->idTexto = $row['idTexto'];
-			$obj->texto = $row['texto'];
-			array_push($evento['extras']['textos'], $obj);
+			switch ((int)$row['tipo']) {
+				case 1:
+					$evento['textoFunciones'] = $row['texto'];
+					break;
+				default:
+					$obj = new stdClass;
+					$obj->idTexto = $row['idTexto'];
+					$obj->texto = $row['texto'];
+					array_push($evento['extras']['textos'], $obj);
+					break;
+			}
 		}	
 
 		$query = "SELECT * FROM directores_evento WHERE uidEvento='".$data['uidEvento']."'";
@@ -484,11 +491,6 @@ class Storage {
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
 			
-			//$seconds = round((int)$data['fechas'][$i]->fecha/1000);
-			//$fecha = new DateTime();
-			//$fecha->setTimestamp($seconds);
-
-			//date_default_timezone_set("ART"); 
 			$epoch = (int)$data['fechas'][$i]->fecha / 1000; 
 			$fecha = new DateTime("@$epoch");
 
@@ -522,23 +524,20 @@ class Storage {
 		if($addEvent) {
 			$queryDatosEvento = "INSERT INTO datos_evento (uidEvento,idTemporada,giras_nacionalidad,idpais,idciudad,idCiclo,idLocacion,str_titulo,idDirector) VALUES ('".$uidEvento."','".$data['temporada']."','".$data['nacionalidad']."','".$data['pais']."','".$data['ciudad']."','".$data['ciclo']."','".$data['locacion']."','".$data['titulo']."','".$data['director']."');";
 			mysql_query($queryDatosEvento) or die ("Error en la consulta " . $queryDatosEvento);
-			// Imagen
+			
 			$queryEventImagen = "INSERT INTO imagenes_evento (uidEvento,imagen) VALUES ('".$uidEvento."','". $data['imagen']."');";
 			mysql_query($queryEventImagen) or die ("Error en la consulta " . $queryEventImagen);
 			
-			// Directores
 			for($d=0;$d<count($data['directores']);$d++) {
 				$queryEventDirectores = "INSERT INTO directores_evento (idEvento,uidEvento,idDirector) VALUES ('0','".$uidEvento."','". $data['directores'][$d]->idDirector."');";
 				mysql_query($queryEventDirectores) or die ("Error en la consulta " . $queryEventDirectores);
 			}
 
-			// Solistas
 			for($s=0;$s<count($data['solistas']);$s++) {
 				$queryEventSolistas = "INSERT INTO solistas_evento (idEvento,uidEvento,idSolista) VALUES ('0','".$uidEvento."','". $data['solistas'][$s]->idSolista."');";
 				mysql_query($queryEventSolistas) or die ("Error en la consulta " . $queryEventSolistas);
 			}
 
-			// Compositores
 			for($c=0;$c<count($data['compositores']);$c++) {
 				$queryEventCompositores = "INSERT INTO compositores_evento (idEvento,uidEvento,idCompositor) VALUES ('0','".$uidEvento."','". $data['compositores'][$c]->idCompositor."');";
 				$result = mysql_query($queryEventCompositores) or die ("Error en la consulta " . $queryEventCompositores);
@@ -549,7 +548,11 @@ class Storage {
 				}
 			}
 
-			// Textos
+			if($data['textoFunciones'] != "") {
+				$queryTextoFunciones = "INSERT INTO textos_evento (uidEvento,texto,tipo) VALUES ('".$uidEvento."','". $data['textoFunciones']."',1);";
+				mysql_query($queryTextoFunciones) or die ("Error en la consulta " . $queryTextoFunciones);
+			}
+
 			for($t=0;$t<count($data['textos']);$t++) {
 				$queryTextosEvento = "INSERT INTO textos_evento (uidEvento,texto,orden) VALUES ('".$uidEvento."','". $data['textos'][$t]->texto."','". ($t+1)."');";
 				mysql_query($queryTextosEvento) or die ("Error en la consulta " . $queryTextosEvento);
@@ -588,15 +591,10 @@ class Storage {
 			$addEvent = true;
 			$uid = md5(uniqid(rand(), true));
 
-			//$seconds = round((int)$data['fechas'][$i]->fecha/1000);
-			//$fecha = new DateTime();
-			//$fecha->setTimestamp($seconds);
-
 			$epoch = (int)$data['fechas'][$i]->fecha / 1000; 
 			$fecha = new DateTime("@$epoch");
 			
 			// Event Details
-			
 			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".""."');";
 			mysql_query($queryEventDetails) or die ("Error en la consulta " . $queryEventDetails);
 			$eventDetailId = mysql_insert_id();
@@ -669,6 +667,12 @@ class Storage {
 			// Textos
 			$queryRemoveTextosEvento = "DELETE FROM textos_evento WHERE uidEvento='".$uidEvento."'";
 			mysql_query($queryRemoveTextosEvento) or die ("Error en la consulta " . $queryRemoveTextosEvento);
+
+			if($data['textoFunciones'] != "") {
+				$queryTextoFunciones = "INSERT INTO textos_evento (uidEvento,texto,tipo) VALUES ('".$uidEvento."','". $data['textoFunciones']."',1);";
+				mysql_query($queryTextoFunciones) or die ("Error en la consulta " . $queryTextoFunciones);
+			}
+
 			for($t=0;$t<count($data['textos']);$t++) {
 				$queryTextosEvento = "INSERT INTO textos_evento (uidEvento,texto,orden) VALUES ('".$uidEvento."','". $data['textos'][$t]->texto."','". ($t+1)."');";
 				mysql_query($queryTextosEvento) or die ("Error en la consulta " . $queryTextosEvento);
