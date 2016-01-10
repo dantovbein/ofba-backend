@@ -1,2 +1,5 @@
 backup/
 com_jevents/
+.DS_Store
+fixes_INSERTs.txt
+ofba6452_db.sql
