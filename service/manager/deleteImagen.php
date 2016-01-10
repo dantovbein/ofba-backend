@@ -3,11 +3,15 @@
 	require_once "../Storage.php";
 	
 	if(isset($_GET['id'])) { $id = $_GET['id']; }
+
+	if($id == "") {
+		echo "Se debe setear el id";
+	} else {
+		$data = array(
+    		"id" => $id
+    	);
 	
-	$data = array(
-    	"id" => $id
-    );
-	
-	$storage = new Storage();
-	echo $storage->deleteImagen($data);
+		$storage = new Storage();
+		echo $storage->deleteImagen($data);
+	}	
 ?>

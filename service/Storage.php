@@ -8,7 +8,7 @@ class Storage {
 
 	public function Storage() {
 		
-		$debug = true;
+		$debug = !true;
 		if($debug) {
 			$this->host = "localhost";	
 			$this->username = "root";
@@ -495,25 +495,25 @@ class Storage {
 			$fecha = new DateTime("@$epoch");
 
 			// Event Details
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".$data['titulo']."');";
 			mysql_query($queryEventDetails) or die ("Error en la consulta " . $queryEventDetails);
 			$eventDetailId = mysql_insert_id();
 			
 			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$epoch.';s:5:"DTEND";i:'.$epoch.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
-			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
+			$queryEventData = "INSERT INTO ofba_jevents_vevent (ev_id,uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id,access) VALUES ('".$eventDetailId."','".$uidEvento."','".$data['icsid']."','".$data['catid']."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."',1);";
 			mysql_query($queryEventData) or die ("Error en la consulta " . $queryEventData);
-			$eventId = mysql_insert_id();
+			//$eventId = mysql_insert_id();
 			
 			// Repetition of the event and get the url.
 			$uidRepetition = md5(uniqid(rand(), true));
-			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('d/m/Y H:i:s')."','".$fecha->format('d/m/Y H:i:s')."');";
+			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (rp_id,eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventDetailId."','".$eventDetailId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('Y-m-d H:i:s')."','".$fecha->format('Y-m-d 23:59:59')."');";
 			mysql_query($queryEventRepetition) or die ("Error en la consulta " . $queryEventRepetition);
 			$eventRepetitionId = mysql_insert_id();
-			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
+			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('Y/m/d')."/".$eventRepetitionId;
 
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventDetailId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
 			mysql_query($queryEventoPerfx) or die ("Error en la consulta " . $queryEventoPerfx);
 			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
@@ -595,26 +595,26 @@ class Storage {
 			$fecha = new DateTime("@$epoch");
 			
 			// Event Details
-			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".""."');";
+			$queryEventDetails = "INSERT INTO ofba_jevents_vevdetail (uidEvento,dtstart,description,summary) VALUES ('".$uidEvento."','".$epoch."','". $data['desc']."','".$data['titulo']."');";
 			mysql_query($queryEventDetails) or die ("Error en la consulta " . $queryEventDetails);
 			$eventDetailId = mysql_insert_id();
 			
 			$rawdata = 'a:20:{s:3:"UID";s:32:"'.$uid.'";s:11:"X-EXTRAINFO";s:0:"";s:8:"LOCATION";s:0:"";s:11:"allDayEvent";s:3:"off";s:7:"CONTACT";s:0:"";s:11:"DESCRIPTION";s:'.strlen($data['desc']).':'.$data['desc'].';s:12:"publish_down";s:10:"'.$fecha->format('d/m/Y').'";s:10:"publish_up";s:10:"'.$fecha->format('d/m/Y').'";s:13:"publish_down2";s:10:"'.$fecha->format('d/m/Y').'";s:11:"publish_up2";s:10:"'.$fecha->format('d/m/Y').'";s:7:"SUMMARY";s:17:"Giras Extranjeras";s:3:"URL";s:0:"";s:11:"X-CREATEDBY";i:40;s:7:"DTSTART";i:'.$epoch.';s:5:"DTEND";i:'.$epoch.';s:5:"RRULE";a:4:{s:4:"FREQ";s:4:"none";s:5:"COUNT";i:1;s:8:"INTERVAL";s:1:"1";s:5:"BYDAY";s:24:"+1SA,+2SA,+3SA,+4SA,+5SA";}s:8:"MULTIDAY";s:1:"1";s:9:"NOENDTIME";s:1:"1";s:7:"X-COLOR";s:0:"";s:9:"LOCKEVENT";s:1:"0";}';
 			
 			// Event
-			$queryEventData = "INSERT INTO ofba_jevents_vevent (uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id) VALUES ('".$uidEvento."','"."0"."','"."0"."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."');";
+			$queryEventData = "INSERT INTO ofba_jevents_vevent (ev_id,uidEvento,icsid,catid,uid,created_by,modified_by,rawdata,detail_id,access) VALUES ('".$eventDetailId."','".$uidEvento."','".$data['icsid']."','".$data['catid']."','". $uid."','"."40"."','"."40"."','".$rawdata."','".$eventDetailId."',1);";
 			mysql_query($queryEventData) or die ("Error en la consulta " . $queryEventData);
-			$eventId = mysql_insert_id();
+			//$eventId = mysql_insert_id();
 			
 			
 			// Repetition of the event and get the url.
 			$uidRepetition = md5(uniqid(rand(), true));
-			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('d/m/Y H:i:s')."','".$fecha->format('d/m/Y H:i:s')."');";
+			$queryEventRepetition = "INSERT INTO ofba_jevents_repetition (rp_id,eventid,uidEvento,eventdetail_id,duplicatecheck,startrepeat,endrepeat) VALUES ('".$eventDetailId."','".$eventDetailId."','".$uidEvento."','".$eventDetailId."','".$uidRepetition."','".$fecha->format('Y-m-d H:i:s')."','".$fecha->format('Y-m-d 23:59:59')."');";
 			mysql_query($queryEventRepetition) or die ("Error en la consulta " . $queryEventRepetition);
 			$eventRepetitionId = mysql_insert_id();
-			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('d/m/Y')."/".$eventRepetitionId;
+			$link = "index.php/homepage/listados-completo/icalrepeat.detail/".$fecha->format('Y/m/d')."/".$eventRepetitionId;
 
-			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
+			$queryEventoPerfx = "INSERT INTO eventos_perfx (eventid,uidEvento,idTemporada,idCiclo,fecha,horaInicio,link,idLocacion,idpais,giras_nacionalidad,str_titulo,str_temporada,str_ciclo,str_locacion,str_ciudad) VALUES ('".$eventDetailId."','".$uidEvento."','".$data['temporada']."','".$data['ciclo']."','".$fecha->format('Y/m/d')."','".$fecha->format('H:i:s')."','".$link."','".$data['locacion']."','".$data['pais']."','".$data['nacionalidad']."','".$data['titulo']."','".$data['strTemporada']."','".$data['strCiclo']."','".$data['strLocacion']."','".$data['strCiudad']."');";
 			mysql_query($queryEventoPerfx) or die ("Error en la consulta " . $queryEventoPerfx);
 			
 			$queryEventoFecha = "INSERT INTO fechas_evento (uidEvento,fecha) VALUES ('".$uidEvento."','".$data['fechas'][$i]->fecha."');";
@@ -682,20 +682,20 @@ class Storage {
 		$this->close();
 	}
 
-	public function deleteEvento($data){
+	public function deleteEvento($uidEvento){
 		$this->connect();
-		mysql_query('DELETE FROM ofba_jevents_vevent WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM ofba_jevents_vevdetail WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM ofba_jevents_repetition WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM eventos_perfx WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM datos_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM textos_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM imagenes_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM directores_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM compositores_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM obras_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM solistas_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
-		mysql_query('DELETE FROM fechas_evento WHERE uidEvento="'.$data['uidEvento'].'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM ofba_jevents_vevent WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM ofba_jevents_vevdetail WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM ofba_jevents_repetition WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM eventos_perfx WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM datos_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM textos_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM imagenes_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM directores_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM compositores_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM obras_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM solistas_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
+		mysql_query('DELETE FROM fechas_evento WHERE uidEvento="'.$uidEvento.'"') or die ("Error en la consulta");
 		$this->close();
 	}
 

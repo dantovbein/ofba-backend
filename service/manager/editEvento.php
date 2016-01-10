@@ -25,6 +25,8 @@
 	$strLocacion = (isset($_GET['strLocacion'])) ? $_GET['strLocacion'] : "";
 	$strCiudad = (isset($_GET['strCiudad'])) ? $_GET['strCiudad'] : "";
 	$textoFunciones = (isset($_GET['textoFunciones'])) ? $_GET['textoFunciones'] : "";
+	$catid = (isset($_GET['catid'])) ? $_GET['catid'] : "";
+	$icsid = (isset($_GET['icsid'])) ? $_GET['icsid'] : "";
 
 	$data = array(
     	"uidEvento" => $uidEvento,
@@ -47,7 +49,9 @@
     	"strCiclo" => $strCiclo,
     	"strLocacion" => $strLocacion,
     	"strCiudad" => $strCiudad,
-    	"textoFunciones" => $textoFunciones
+    	"textoFunciones" => $textoFunciones,
+    	"icsid" => $icsid,
+    	"catid" => $catid
     );
 
 	$storage = new Storage();

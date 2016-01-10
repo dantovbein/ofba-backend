@@ -4,10 +4,10 @@
 	
 	$uidEvento = (isset($_GET['uidEvento'])) ? $_GET['uidEvento'] : "";
 	
-	$data = array(
-    	"uidEvento" => $uidEvento
-    );
-	
-	$storage = new Storage();
-	echo $storage->deleteEvento($data);
+	if($uidEvento==""){
+		echo "Se debe setear el uidEvento";
+	} else {
+		$storage = new Storage();
+		echo $storage->deleteEvento($uidEvento);
+	}	
 ?>
